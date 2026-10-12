@@ -32,6 +32,7 @@ ENV/
 
 # Databases & local state
 *.db
+*.db-*
 *.sqlite
 *.sqlite3
 

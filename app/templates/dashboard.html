@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlyRank Widget Platform · Owner Dashboard</title>
+  <style>
+    :root {
+      --bg: #0F172A;
+      --card-bg: #1E293B;
+      --border: #334155;
+      --text: #F8FAFC;
+      --text-muted: #94A3B8;
+      --primary: #6366F1;
+      --primary-hover: #4F46E5;
+      --accent: #10B981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 32px 24px; min-height: 100vh; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+    h1 { font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .badge { background: #312E81; color: #C7D2FE; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; }
+    .auth-bar { display: flex; gap: 10px; align-items: center; }
+    input[type="text"] { background: var(--card-bg); border: 1px solid var(--border); color: #fff; padding: 8px 14px; border-radius: 6px; font-size: 14px; width: 280px; }
+    button { background: var(--primary); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    button:hover { background: var(--primary-hover); }
+    .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-bottom: 28px; }
+    .stat-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+    .stat-label { font-size: 13px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-value { font-size: 32px; font-weight: 700; margin-top: 6px; color: #fff; }
+    .section-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-bottom: 28px; }
+    .section-header { font-size: 18px; font-weight: 600; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+    th { color: var(--text-muted); font-weight: 600; padding: 12px; border-bottom: 1px solid var(--border); }
+    td { padding: 12px; border-bottom: 1px solid rgba(51, 65, 85, 0.4); }
+    tr:last-child td { border-bottom: none; }
+    .tag { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; background: #064E3B; color: #6EE7B7; }
+    .empty-state { text-align: center; padding: 36px; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>FlyRank Widget Platform <span class="badge">Backend Capstone</span></h1>
+      <div class="auth-bar">
+        <input type="text" id="apiKeyInput" placeholder="Enter Tenant API Key..." value="demo_key_acme_123" />
+        <button id="loadBtn">Connect</button>
+      </div>
+    </header>
+
+    <div class="grid-stats">
+      <div class="stat-card">
+        <div class="stat-label">Total Submissions</div>
+        <div class="stat-value" id="totalSubmissions">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active Widgets</div>
+        <div class="stat-value" id="totalWidgets">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Top Location</div>
+        <div class="stat-value" id="topLocation">-</div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <span>Recent Submissions (Live)</span>
+        <button id="refreshBtn" style="font-size: 12px; padding: 4px 10px;">Refresh</button>
+      </div>
+      <div id="submissionsContainer">
+        <table id="submissionsTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Widget</th>
+              <th>Lead Data</th>
+              <th>Geo / IP Location</th>
+              <th>Enrichment Provider</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody id="submissionsBody">
+            <tr><td colspan="6" class="empty-state">Enter API Key and click Connect to load submissions.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">Widgets & Snippets</div>
+      <div id="widgetsList" class="empty-state">No widgets loaded.</div>
+    </div>
+  </div>
+
+  <script>
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const loadBtn = document.getElementById('loadBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+
+    async function loadData() {
+      const apiKey = apiKeyInput.value.trim();
+      if (!apiKey) return alert("Please enter a tenant API key.");
+
+      try {
+        const statsRes = await fetch('/api/dashboard/stats', {
+          headers: { 'Authorization': `Bearer ${apiKey}` }
+        });
+        if (!statsRes.ok) throw new Error("Authentication failed or invalid API Key");
+        const stats = await statsRes.json();
+
+        document.getElementById('totalSubmissions').textContent = stats.total_submissions;
+        document.getElementById('totalWidgets').textContent = stats.total_widgets;
+        document.getElementById('topLocation').textContent = stats.geo_breakdown[0] ? `${stats.geo_breakdown[0].country} (${stats.geo_breakdown[0].count})` : 'N/A';
+
+        const tbody = document.getElementById('submissionsBody');
+        if (stats.recent_submissions.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No submissions yet. Submissions from customer sites will appear here.</td></tr>';
+        } else {
+          tbody.innerHTML = stats.recent_submissions.map(s => `
+            <tr>
+              <td><code>${s.id}</code></td>
+              <td><strong>${s.widget_name}</strong></td>
+              <td><code>${JSON.stringify(s.data)}</code></td>
+              <td>${s.city ? `${s.city}, ${s.country}` : (s.country || 'Unknown')}</td>
+              <td><span class="tag">${s.geo_provider}</span></td>
+              <td>${s.created_at}</td>
+            </tr>
+          `).join('');
+        }
+
+        // Fetch Widgets
+        const wRes = await fetch('/api/widgets', {
+          headers: { 'Authorization': `Bearer ${apiKey}` }
+        });
+        const widgets = await wRes.json();
+        const wList = document.getElementById('widgetsList');
+        if (widgets.length === 0) {
+          wList.innerHTML = '<div class="empty-state">No widgets created yet.</div>';
+        } else {
+          wList.innerHTML = widgets.map(w => `
+            <div style="background: rgba(15,23,42,0.6); padding: 14px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border);">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <strong>${w.name} (${w.type})</strong>
+                <span style="font-size: 12px; color: var(--text-muted);">ID: <code>${w.id}</code></span>
+              </div>
+              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">Embed Snippet:</p>
+              <pre style="background: #020617; padding: 10px; border-radius: 6px; font-size: 12px; overflow-x: auto; color: #38BDF8;">${escapeHtml(w.embed_snippet)}</pre>
+            </div>
+          `).join('');
+        }
+
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    loadBtn.addEventListener('click', loadData);
+    refreshBtn.addEventListener('click', loadData);
+  </script>
+</body>
+</html>
