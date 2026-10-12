@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acme Developer Blog · Embedded Widget Demo</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #F8FAFC;
+      color: #1E293B;
+      line-height: 1.6;
+    }
+    nav {
+      background: #FFFFFF;
+      border-bottom: 1px solid #E2E8F0;
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand { font-size: 20px; font-weight: 700; color: #0F172A; }
+    .badge { background: #EEF2FF; color: #4F46E5; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .hero {
+      max-width: 800px;
+      margin: 48px auto;
+      padding: 0 24px;
+      text-align: center;
+    }
+    .hero h1 { font-size: 38px; font-weight: 800; color: #0F172A; margin-bottom: 16px; letter-spacing: -0.5px; }
+    .hero p { font-size: 18px; color: #64748B; margin-bottom: 32px; }
+    .origin-notice {
+      background: #FEF3C7;
+      border: 1px solid #F59E0B;
+      border-radius: 8px;
+      padding: 14px 20px;
+      font-size: 14px;
+      color: #92400E;
+      margin-bottom: 32px;
+      text-align: left;
+    }
+    .widget-container-box {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 32px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      margin-top: 36px;
+      display: flex;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="brand">Acme Developer Blog</div>
+    <div class="badge">Origin: Port 5500 (Cross-Origin Customer Site)</div>
+  </nav>
+
+  <div class="hero">
+    <div class="origin-notice">
+      <strong>Cross-Origin Test Proof:</strong> This customer website is served from origin <code>http://localhost:5500</code>.
+      The embed script and submission API are served from <code>http://localhost:8000</code>. This proves CORS, preflights, and browser boundary security.
+    </div>
+
+    <h1>Building Scalable Architecture for the Modern Web</h1>
+    <p>Read our technical deep-dives on microservices, caching, abuse resilience, and developer tooling.</p>
+
+    <!-- Mount target for inline widget -->
+    <div class="widget-container-box">
+      <div data-flyrank-widget="wgt_demo_newsletter"></div>
+    </div>
+  </div>
+
+  <!-- Embed snippet: One line script loaded from backend API origin -->
+  <script src="http://localhost:8000/widget.js?id=wgt_demo_newsletter" data-widget-id="wgt_demo_newsletter"></script>
+</body>
+</html>
